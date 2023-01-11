@@ -1,0 +1,554 @@
+---
+title: "BA1"
+output:
+  html_document: default
+  word_document: default
+date: "2023-01-09"
+---
+
+Imports the College Basketball Dataset from Kaggle.
+
+```{r message = FALSE}
+library(readr)
+library(ggplot2)
+cbb = read_csv("cbb.csv")
+```
+
+Renaming columns to make it easier to work with
+```{r}
+colnames(cbb)[16] = "TwoP_O"
+colnames(cbb)[17] = "TwoP_D"
+colnames(cbb)[18] = "ThreeP_O"
+colnames(cbb)[19] = "ThreeP_D"
+```
+
+
+Removes the NA values in the Postseason column to make things a little easier
+```{r}
+for (i in 1:nrow(cbb)) {
+  if (is.na(cbb$POSTSEASON[i])) {
+     cbb$POSTSEASON[i] = "NA"
+   }
+
+}
+```
+
+Checking values in Postseaon column
+```{r}
+table(cbb$POSTSEASON)
+```
+
+
+Makes new indicator columns based on how far the team made it into March Madness
+```{r warning = FALSE}
+cbb$Made68 <- TRUE
+for (i in 1:nrow(cbb)) {
+  if (cbb$POSTSEASON[i] == "NA") {
+     cbb$Made68[i] = FALSE
+  }
+
+}
+
+cbb$Made64 <- TRUE
+for (i in 1:nrow(cbb)) {
+  if (cbb$POSTSEASON[i] == "NA" || cbb$POSTSEASON[i] == "R68") {
+     cbb$Made64[i] = FALSE
+  }
+}
+
+cbb$Made32 <- TRUE
+for (i in 1:nrow(cbb)) {
+  if (cbb$POSTSEASON[i] == "NA" || cbb$POSTSEASON[i] == "R68" || cbb$POSTSEASON[i] == "R64") {
+     cbb$Made32[i] = FALSE
+  }
+}
+
+cbb$Made16 <- TRUE
+for (i in 1:nrow(cbb)) {
+  if (cbb$POSTSEASON[i] == "NA" || cbb$POSTSEASON[i] == "R68" || cbb$POSTSEASON[i] == "R64" || cbb$POSTSEASON[i] == "R32") {
+     cbb$Made16[i] = FALSE
+  }
+}
+
+cbb$Made8 <- TRUE
+for (i in 1:nrow(cbb)) {
+  if (cbb$POSTSEASON[i] == "NA" || cbb$POSTSEASON[i] == "R68" || cbb$POSTSEASON[i] == "R64" || cbb$POSTSEASON[i] == "R32" || cbb$POSTSEASON[i] == "S16") {
+     cbb$Made8[i] = FALSE
+  }
+}
+
+cbb$Made4 <- TRUE
+for (i in 1:nrow(cbb)) {
+  if (cbb$POSTSEASON[i] == "NA" || cbb$POSTSEASON[i] == "R68" || cbb$POSTSEASON[i] == "R64" || cbb$POSTSEASON[i] == "R32" || cbb$POSTSEASON[i] == "S16" || cbb$POSTSEASON[i] == "E8") {
+     cbb$Made4[i] = FALSE
+  }
+}
+
+cbb$Made2 <- TRUE
+for (i in 1:nrow(cbb)) {
+  if (cbb$POSTSEASON[i] == "NA" || cbb$POSTSEASON[i] == "R68" || cbb$POSTSEASON[i] == "R64" || cbb$POSTSEASON[i] == "R32" || cbb$POSTSEASON[i] == "S16" || cbb$POSTSEASON[i] == "E8" || cbb$POSTSEASON[i] == "F4") {
+     cbb$Made2[i] = FALSE
+  }
+}
+
+cbb$Made1 <- FALSE
+for (i in 1:nrow(cbb)) {
+  if (cbb$POSTSEASON[i] == "Champions") {
+     cbb$Made1[i] = TRUE
+  }
+}
+```
+
+Checks to make sure there are a correct amount of trues for each column
+```{r}
+table(cbb$Made1)
+table(cbb$Made2)
+table(cbb$Made4)
+table(cbb$Made8)
+table(cbb$Made16)
+table(cbb$Made32)
+table(cbb$Made64)
+table(cbb$Made68)
+```
+Creates bargraphs and shows different color points for the teams that made it the NCAA tournament and where they were eliminated.
+```{r}
+boxplot.function <- function(a) {
+  boxplot(cbb[[a]]~factor(cbb$YEAR), main = a)
+  points(factor((cbb[cbb$Made68 == TRUE,])$YEAR), y = cbb[cbb$Made68 == TRUE,][[a]], col = "chartreuse4")
+  points(factor((cbb[cbb$Made64 == TRUE,])$YEAR), y = cbb[cbb$Made64 == TRUE,][[a]], col = "coral3")
+  points(factor((cbb[cbb$Made32 == TRUE,])$YEAR), y = cbb[cbb$Made32 == TRUE,][[a]], col = "cyan4")
+  points(factor((cbb[cbb$Made16 == TRUE,])$YEAR), y = cbb[cbb$Made16 == TRUE,][[a]], col = "darkgoldenrod")
+  points(factor((cbb[cbb$Made8 == TRUE,])$YEAR), y = cbb[cbb$Made8 == TRUE,][[a]], col = "darkolivegreen")
+  points(factor((cbb[cbb$Made4 == TRUE,])$YEAR), y = cbb[cbb$Made4 == TRUE,][[a]], col = "darkorange")
+  points(factor((cbb[cbb$Made1 == TRUE,])$YEAR), y = cbb[cbb$Made1 == TRUE,][[a]], col = "darkorchid")
+}
+```
+
+```{r}
+boxplot.function(a = "ADJOE")
+boxplot.function(a = "ADJDE")
+boxplot.function(a = "BARTHAG")
+boxplot.function(a = "EFG_O")
+boxplot.function(a = "EFG_D")
+boxplot.function(a = "TOR")
+boxplot.function(a = "TORD")
+boxplot.function(a = "ORB")
+boxplot.function(a = "DRB")
+boxplot.function(a = "FTR")
+boxplot.function(a = "FTRD")
+boxplot.function(a = "TwoP_O")
+boxplot.function(a = "TwoP_D")
+boxplot.function(a = "ThreeP_O")
+boxplot.function(a = "ThreeP_D")
+boxplot.function(a = "ADJ_T")
+```
+
+```{r}
+boxplot1.function <- function(a) {
+  boxplot(cbb[[a]]~factor(cbb$YEAR), main = a)
+  #points(factor((cbb[cbb$Made68 == TRUE,])$YEAR), y = cbb[cbb$Made68 == TRUE,][[a]], col = "chartreuse4")
+  #points(factor((cbb[cbb$Made64 == TRUE,])$YEAR), y = cbb[cbb$Made64 == TRUE,][[a]], col = "coral3")
+  #points(factor((cbb[cbb$Made32 == TRUE,])$YEAR), y = cbb[cbb$Made32 == TRUE,][[a]], col = "cyan4")
+  points(factor((cbb[cbb$Made16 == TRUE,])$YEAR), y = cbb[cbb$Made16 == TRUE,][[a]], col = "darkgoldenrod")
+  points(factor((cbb[cbb$Made8 == TRUE,])$YEAR), y = cbb[cbb$Made8 == TRUE,][[a]], col = "darkolivegreen")
+  points(factor((cbb[cbb$Made4 == TRUE,])$YEAR), y = cbb[cbb$Made4 == TRUE,][[a]], col = "darkorange")
+  points(factor((cbb[cbb$Made1 == TRUE,])$YEAR), y = cbb[cbb$Made1 == TRUE,][[a]], col = "darkorchid")
+}
+```
+
+```{r}
+boxplot1.function(a = "ADJOE")
+boxplot1.function(a = "ADJDE")
+boxplot1.function(a = "BARTHAG")
+boxplot1.function(a = "EFG_O")
+boxplot1.function(a = "EFG_D")
+boxplot1.function(a = "TOR")
+boxplot1.function(a = "TORD")
+boxplot1.function(a = "ORB")
+boxplot1.function(a = "DRB")
+boxplot1.function(a = "FTR")
+boxplot1.function(a = "FTRD")
+boxplot1.function(a = "TwoP_O")
+boxplot1.function(a = "TwoP_D")
+boxplot1.function(a = "ThreeP_O")
+boxplot1.function(a = "ThreeP_D")
+boxplot1.function(a = "ADJ_T")
+```
+
+```{r}
+boxplot2.function <- function(a) {
+  boxplot(cbb[[a]]~factor(cbb$YEAR), main = a)
+  #points(factor((cbb[cbb$Made68 == TRUE,])$YEAR), y = cbb[cbb$Made68 == TRUE,][[a]], col = "chartreuse4")
+  #points(factor((cbb[cbb$Made64 == TRUE,])$YEAR), y = cbb[cbb$Made64 == TRUE,][[a]], col = "coral3")
+  #points(factor((cbb[cbb$Made32 == TRUE,])$YEAR), y = cbb[cbb$Made32 == TRUE,][[a]], col = "cyan4")
+  #points(factor((cbb[cbb$Made16 == TRUE,])$YEAR), y = cbb[cbb$Made16 == TRUE,][[a]], col = "darkgoldenrod")
+  #points(factor((cbb[cbb$Made8 == TRUE,])$YEAR), y = cbb[cbb$Made8 == TRUE,][[a]], col = "darkolivegreen")
+  points(factor((cbb[cbb$Made4 == TRUE,])$YEAR), y = cbb[cbb$Made4 == TRUE,][[a]], col = "darkorange")
+  points(factor((cbb[cbb$Made1 == TRUE,])$YEAR), y = cbb[cbb$Made1 == TRUE,][[a]], col = "darkorchid")
+}
+```
+
+```{r}
+boxplot2.function(a = "ADJOE")
+boxplot2.function(a = "ADJDE")
+boxplot2.function(a = "BARTHAG")
+boxplot2.function(a = "EFG_O")
+boxplot2.function(a = "EFG_D")
+boxplot2.function(a = "TOR")
+boxplot2.function(a = "TORD")
+boxplot2.function(a = "ORB")
+boxplot2.function(a = "DRB")
+boxplot2.function(a = "FTR")
+boxplot2.function(a = "FTRD")
+boxplot2.function(a = "TwoP_O")
+boxplot2.function(a = "TwoP_D")
+boxplot2.function(a = "ThreeP_O")
+boxplot2.function(a = "ThreeP_D")
+boxplot2.function(a = "ADJ_T")
+```
+
+
+
+Creates a function to do nested T-tests for features that we are interested in
+```{r}
+t.tests.function <- function(a, b) {
+  print(t.test(a$TOR,b$TOR))
+  print(t.test(a$TORD,b$TORD))
+  print(t.test(a$ORB,b$ORB))
+  print(t.test(a$DRB,b$DRB))
+  print(t.test(a$"TwoP_O",b$"TwoP_O"))
+  print(t.test(a$"TwoP_D",b$"TwoP_D"))
+  print(t.test(a$"ThreeP_O",b$"ThreeP_O"))
+  print(t.test(a$"ThreeP_D",b$"ThreeP_D"))
+}
+```
+
+Creates new data frames to make it a little easier to do two sample t tests
+```{r}
+cbb_R68 = cbb[(cbb$POSTSEASON) == 'R68',]
+cbb_R64 = cbb[(cbb$POSTSEASON) == 'R64',]
+cbb_R32 = cbb[(cbb$POSTSEASON) == 'R32',]
+cbb_S16 = cbb[(cbb$POSTSEASON) == 'S16',]
+cbb_E8 = cbb[(cbb$POSTSEASON) == 'E8',]
+cbb_F4 = cbb[(cbb$POSTSEASON) == 'F4',]
+cbb_2ND = cbb[(cbb$POSTSEASON) == '2ND',]
+cbb_Champions = cbb[(cbb$POSTSEASON) == 'Champions',]
+```
+
+```{r}
+M1 = cbb_Champions
+M2 = rbind(cbb_Champions, cbb_2ND)
+M4 = rbind(M2, cbb_F4) #final 4
+M8 = rbind(M4, cbb_E8) #8
+M16 = rbind(M8, cbb_S16) #16
+M32 = rbind(M16, cbb_R32) #32
+M64 = rbind(M32, cbb_R64) #64
+M68 = rbind(M64, cbb_R68) #68
+```
+
+
+
+
+```{r}
+t.tests.function(M68, cbb)
+```
+
+```{r}
+t.tests.function(M32, M68)
+```
+
+```{r}
+t.tests.function(M16, M32)
+```
+
+Of the people that made the tournament
+
+```{r}
+boxplot(ADJOE~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+boxplot(ADJDE~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+boxplot(BARTHAG~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+boxplot(EFG_O~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+boxplot(EFG_D~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+boxplot(TOR~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+boxplot(TORD~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+boxplot(ORB~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+boxplot(DRB~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+boxplot(FTR~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+boxplot(FTRD~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+boxplot(TwoP_O~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+boxplot(TwoP_D~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+boxplot(ThreeP_O~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+boxplot(ThreeP_D~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+boxplot(ADJ_T~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
+```
+
+histograms to see normailty
+
+```{r}
+qqplot.function <- function(a, b) {
+  qqnorm(a, main = b)
+  qqline(a)
+}
+```
+
+```{r}
+qqplot.function(M64$ADJOE, "ADJOE")
+qqplot.function(M64$ADJDE, "ADJDE")
+qqplot.function(M64$BARTHAG, "BARTHAG")
+qqplot.function(M64$EFG_O, "EFG_O")
+qqplot.function(M64$EFG_D, "EFG_D")
+qqplot.function(M64$TOR, "TOR")
+qqplot.function(M64$TORD, "TORD")
+qqplot.function(M64$ORB, "ORB")
+qqplot.function(M64$DRB, "DRB")
+qqplot.function(M64$FTR, "FTR")
+qqplot.function(M64$FTRD, "FTRD")
+qqplot.function(M64$TwoP_O, "TwoP_O")
+qqplot.function(M64$TwoP_D, "TwoP_D")
+qqplot.function(M64$ThreeP_O, "ThreeP_O")
+qqplot.function(M64$ThreeP_D, "ThreeP_D")
+qqplot.function(M64$ADJ_T, "ADJ_T")
+```
+
+
+```{r}
+boxplot.function2 <- function(a) {
+  boxplot(M68[[a]]~factor(M68$YEAR), main = a)
+  #points(factor((M68[M68$Made68 == TRUE,])$YEAR), y = M68[M68$Made68 == TRUE,][[a]], col = "chartreuse4")
+  #points(factor((M68[M68$Made64 == TRUE,])$YEAR), y = M68[M68$Made64 == TRUE,][[a]], col = "coral3")
+  #points(factor((M68[M68$Made32 == TRUE,])$YEAR), y = M68[M68$Made32 == TRUE,][[a]], col = "cyan4")
+  #points(factor((M68[M68$Made16 == TRUE,])$YEAR), y = M68[M68$Made16 == TRUE,][[a]], col = "darkgoldenrod")
+  #points(factor((M68[M68$Made8 == TRUE,])$YEAR), y = M68[M68$Made8 == TRUE,][[a]], col = "darkolivegreen")
+  points(factor((M68[M68$Made4 == TRUE,])$YEAR), y = M68[M68$Made4 == TRUE,][[a]], col = "darkorange")
+  points(factor((M68[M68$Made1 == TRUE,])$YEAR), y = M68[M68$Made1 == TRUE,][[a]], col = "darkorchid")
+}
+```
+
+```{r}
+boxplot.function2(a = "ADJOE")
+boxplot.function2(a = "ADJDE")
+boxplot.function2(a = "BARTHAG")
+boxplot.function2(a = "EFG_O")
+boxplot.function2(a = "EFG_D")
+boxplot.function2(a = "TOR")
+boxplot.function2(a = "TORD")
+boxplot.function2(a = "ORB")
+boxplot.function2(a = "DRB")
+boxplot.function2(a = "FTR")
+boxplot.function2(a = "FTRD")
+boxplot.function2(a = "TwoP_O")
+boxplot.function2(a = "TwoP_D")
+boxplot.function2(a = "ThreeP_O")
+boxplot.function2(a = "ThreeP_D")
+boxplot.function2(a = "ADJ_T")
+```
+
+```{r}
+unique(M68$POSTSEASON)
+```
+Closer look with boxplots and t tests
+```{r}
+ggplot(M64, aes(x=factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), y=ADJOE)) + 
+  geom_bar(stat="summary", width=.5, fill="lightblue", fun = "mean") + 
+  labs(title="ADJOE Vs Place in tournament", 
+       subtitle="Distribution depending on how far the team made it into the tournament", 
+       ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  xlab("POSTSEASON") +
+  coord_cartesian(ylim = c(90, 130))
+
+ggplot(M64, aes(x=factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), y=ADJDE)) + 
+  geom_bar(stat="summary", width=.5, fill="lightblue", fun = "mean") + 
+  labs(title="ADJDE Vs Place in tournament", 
+       subtitle="Distribution depending on how far the team made it into the tournament", 
+       ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  xlab("POSTSEASON") +
+  coord_cartesian(ylim = c(80, 110))
+```
+
+```{r}
+t.test(M64$ADJOE[M64$POSTSEASON == "Champions"], M64$ADJOE[M64$POSTSEASON == "S16"])
+
+t.test(M64$ADJDE[M64$POSTSEASON == "Champions"], M64$ADJDE[M64$POSTSEASON == "S16"])
+```
+
+
+```{r}
+ggplot(M64, aes(x=factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), y=EFG_O)) + 
+  geom_bar(stat="summary", width=.5, fill="lightblue", fun = "mean") + 
+  labs(title="EFG_O Vs Place in tournament", 
+       subtitle="Distribution depending on how far the team made it into the tournament", 
+       ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  xlab("POSTSEASON") +
+  coord_cartesian(ylim = c(40, 60))
+
+ggplot(M64, aes(x=factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), y=EFG_D)) + 
+  geom_bar(stat="summary", width=.5, fill="lightblue", fun = "mean") + 
+  labs(title="EFG_D Vs Place in tournament", 
+       subtitle="Distribution depending on how far the team made it into the tournament", 
+       ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  xlab("POSTSEASON") +
+  coord_cartesian(ylim = c(40, 50))
+```
+
+```{r}
+t.test(M64$EFG_O[M64$POSTSEASON == "Champions"], M64$EFG_O[M64$POSTSEASON == "R64"])
+
+t.test(M64$EFG_D[M64$POSTSEASON == "Champions"], M64$EFG_D[M64$POSTSEASON == "R64"])
+```
+
+
+```{r}
+ggplot(M64, aes(x=factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), y=TOR)) + 
+  geom_bar(stat="summary", width=.5, fill="lightblue", fun = "mean") + 
+  labs(title="TOR Vs Place in tournament", 
+       subtitle="Distribution depending on how far the team made it into the tournament", 
+       ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  xlab("POSTSEASON") +
+  coord_cartesian(ylim = c(0, 30))
+
+ggplot(M64, aes(x=factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), y=TORD)) + 
+  geom_bar(stat="summary", width=.5, fill="lightblue", fun = "mean") + 
+  labs(title="TORD Vs Place in tournament", 
+       subtitle="Distribution depending on how far the team made it into the tournament", 
+       ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  xlab("POSTSEASON") +
+  coord_cartesian(ylim = c(0, 30))
+```
+
+```{r}
+t.test(M64$TOR[M64$POSTSEASON == "Champions"], M64$TOR[M64$POSTSEASON == "R64"])
+
+t.test(M64$TORD[M64$POSTSEASON == "Champions"], M64$TORD[M64$POSTSEASON == "R64"])
+```
+
+```{r}
+ggplot(M64, aes(x=factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), y=ORB)) + 
+  geom_bar(stat="summary", width=.5, fill="lightblue", fun = "mean") + 
+  labs(title="ORB Vs Place in tournament", 
+       subtitle="Distribution depending on how far the team made it into the tournament", 
+       ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  xlab("POSTSEASON") +
+  coord_cartesian(ylim = c(20, 40))
+
+ggplot(M64, aes(x=factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), y=DRB)) + 
+  geom_bar(stat="summary", width=.5, fill="lightblue", fun = "mean") + 
+  labs(title="DRBVs Place in tournament", 
+       subtitle="Distribution depending on how far the team made it into the tournament", 
+       ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  xlab("POSTSEASON") +
+  coord_cartesian(ylim = c(20, 40))
+```
+
+```{r}
+t.test(M64$ORB[M64$POSTSEASON == "Champions"], M64$ORB[M64$POSTSEASON == "R64"])
+
+t.test(M64$DRB[M64$POSTSEASON == "Champions"], M64$DRB[M64$POSTSEASON == "R64"])
+```
+
+```{r}
+ggplot(M64, aes(x=factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), y=FTR)) + 
+  geom_bar(stat="summary", width=.5, fill="lightblue", fun = "mean") + 
+  labs(title="FTR Vs Place in tournament", 
+       subtitle="Distribution depending on how far the team made it into the tournament", 
+       ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  xlab("POSTSEASON") +
+  coord_cartesian(ylim = c(10, 50))
+
+ggplot(M64, aes(x=factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), y=FTRD)) + 
+  geom_bar(stat="summary", width=.5, fill="lightblue", fun = "mean") + 
+  labs(title="FTRD Vs Place in tournament", 
+       subtitle="Distribution depending on how far the team made it into the tournament", 
+       ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  xlab("POSTSEASON") +
+  coord_cartesian(ylim = c(10, 50))
+```
+
+```{r}
+t.test(M64$FTR[M64$POSTSEASON == "Champions"], M64$FTR[M64$POSTSEASON == "R64"])
+
+t.test(M64$FTRD[M64$POSTSEASON == "Champions"], M64$FTRD[M64$POSTSEASON == "R64"])
+```
+
+
+```{r}
+ggplot(M64, aes(x=factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), y=TwoP_O)) + 
+  geom_bar(stat="summary", width=.5, fill="lightblue", fun = "mean") + 
+  labs(title="TwoP_O Vs Place in tournament", 
+       subtitle="Distribution depending on how far the team made it into the tournament", 
+       ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  xlab("POSTSEASON") +
+  coord_cartesian(ylim = c(40, 70))
+
+ggplot(M64, aes(x=factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), y=TwoP_D)) + 
+  geom_bar(stat="summary", width=.5, fill="lightblue", fun = "mean") + 
+  labs(title="TwoP_D Vs Place in tournament", 
+       subtitle="Distribution depending on how far the team made it into the tournament", 
+       ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  xlab("POSTSEASON") +
+  coord_cartesian(ylim = c(40, 50))
+```
+
+```{r}
+t.test(M64$TwoP_O[M64$POSTSEASON == "Champions"], M64$TwoP_O[M64$POSTSEASON == "R64"])
+
+t.test(M64$TwoP_D[M64$POSTSEASON == "Champions"], M64$TwoP_D[M64$POSTSEASON == "R64"])
+```
+
+
+```{r}
+ggplot(M64, aes(x=factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), y=ThreeP_O)) + 
+  geom_bar(stat="summary", width=.5, fill="lightblue", fun = "mean") + 
+  labs(title="ThreeP_O Vs Place in tournament", 
+       subtitle="Distribution depending on how far the team made it into the tournament", 
+       ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  xlab("POSTSEASON") +
+  coord_cartesian(ylim = c(20, 60))
+
+ggplot(M64, aes(x=factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), y=ThreeP_D)) + 
+  geom_bar(stat="summary", width=.5, fill="lightblue", fun = "mean") + 
+  labs(title="ThreeP_D Vs Place in tournament", 
+       subtitle="Distribution depending on how far the team made it into the tournament", 
+       ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  xlab("POSTSEASON") +
+  coord_cartesian(ylim = c(20, 40))
+```
+
+```{r}
+t.test(M64$ThreeP_O[M64$POSTSEASON == "Champions"], M64$ThreeP_O[M64$POSTSEASON == "R64"])
+
+t.test(M64$ThreeP_D[M64$POSTSEASON == "Champions"], M64$ThreeP_D[M64$POSTSEASON == "R64"])
+```
+
+```{r}
+ggplot(M64, aes(x=factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), y=ADJ_T)) + 
+  geom_bar(stat="summary", width=.5, fill="lightblue", fun = "mean") + 
+  labs(title="ADJ_T Vs Place in tournament", 
+       subtitle="Distribution depending on how far the team made it into the tournament", 
+       ) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+  xlab("POSTSEASON") +
+  coord_cartesian(ylim = c(60, 80))
+```
+
+```{r}
+t.test(M64$ADJ_T[M64$POSTSEASON == "Champions"], M64$ADJ_T[M64$POSTSEASON == "R64"])
+```
+
+
+
+
+

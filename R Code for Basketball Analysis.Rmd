@@ -282,7 +282,7 @@ boxplot(ThreeP_D~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "
 boxplot(ADJ_T~factor(POSTSEASON, levels = c("Champions", "2ND", "F4", "E8", "S16", "R32", "R64", "R68", "NA")), data = M68)
 ```
 
-histograms to see normailty
+Q-Q plots to see normality
 
 ```{r}
 qqplot.function <- function(a, b) {
